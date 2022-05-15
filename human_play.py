@@ -47,9 +47,9 @@ class Human(object):
 
 
 def run():
-    n = 5
-    width, height = 15, 15
-    model_file = 'best_policy_15_15_5.model'
+    n = 4
+    width, height = 6, 6
+    model_file = 'best_policy_6_6_4.pt'
 
     try:
         '''
@@ -82,14 +82,7 @@ def run():
         # set start_player=0 for human first
         game.start_play(human, mcts_player, start_player=1, is_shown=1)
         '''
-        '''
-        try:
-            policy_param = pickle.load(open(model_file, 'rb'))
-        except:
-            policy_param = pickle.load(open(model_file, 'rb'),
-                                       encoding='bytes')  # To support python3
-        best_policy = PolicyValueNetNumpy(width, height, policy_param)
-        '''
+        # best_policy = PolicyValueNet(width, height, model_file=model_file)
         best_policy = PolicyValueNet(width, height, model_file=model_file)
         mcts_player = MCTSPlayer(best_policy.policy_value_fn,
                                  c_puct=5,
