@@ -8,6 +8,7 @@ An implementation of the training pipeline of AlphaZero for Gomoku
 from __future__ import print_function
 import random
 import numpy as np
+import xlwt
 from collections import defaultdict, deque
 from game import Board, Game
 from mcts_pure import MCTSPlayer as MCTS_Pure
@@ -21,9 +22,9 @@ from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 class TrainPipeline():
     def __init__(self, init_model=None):
         # params of the board and the game
-        self.board_width = 6
-        self.board_height = 6
-        self.n_in_row = 4
+        self.board_width = 15
+        self.board_height = 15
+        self.n_in_row = 5
         self.board = Board(width=self.board_width,
                            height=self.board_height,
                            n_in_row=self.n_in_row)
@@ -46,6 +47,14 @@ class TrainPipeline():
         # num of simulations used for the pure mcts, which is used as
         # the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 1000
+        self.book = xlwt.Workbook(encoding='utf-8', style_compression=0)
+        self.sheet = self.book.add_sheet("15×15,五子棋", cell_overwrite_ok=True)
+        self.col = 1  # num of excel's cul
+        col = ("kl", "lr_multiplier", "loss", "entropy", "explained_var_old", "explained_var_new", "num_playouts", "win", "lose", "tie")
+        for i in range(10):
+            self.sheet.write(0, i, col[i])
+        savepath = './policy_loss.xls'
+        self.book.save(savepath)
         if init_model:
             # start training from an initial policy-value net
             self.policy_value_net = PolicyValueNet(self.board_width,
@@ -137,6 +146,13 @@ class TrainPipeline():
                         entropy,
                         explained_var_old,
                         explained_var_new))
+
+        data = [str(kl), str(self.lr_multiplier), str(loss), str(entropy), str(explained_var_old), str(explained_var_new)]
+        for j in range(6):
+            self.sheet.write(self.col, j, data[j])
+        self.col += 1
+        savepath = './policy_loss.xls'
+        self.book.save(savepath)
         return loss, entropy
 
     def policy_evaluate(self, n_games=10):
@@ -160,6 +176,11 @@ class TrainPipeline():
         print("num_playouts:{}, win: {}, lose: {}, tie:{}".format(
                 self.pure_mcts_playout_num,
                 win_cnt[1], win_cnt[2], win_cnt[-1]))
+        data = [str(self.pure_mcts_playout_num), str(win_cnt[1]), str(win_cnt[2]), str(win_cnt[-1])]
+        for i in range(4):
+            self.sheet.write(self.col, 6+i, data[i])
+        savepath = './policy_loss.xls'
+        self.book.save(savepath)
         return win_ratio
 
     def run(self):
@@ -176,12 +197,12 @@ class TrainPipeline():
                 if (i+1) % self.check_freq == 0:
                     print("current self-play batch: {}".format(i+1))
                     win_ratio = self.policy_evaluate()
-                    self.policy_value_net.save_model('./current_policy.model')
+                    self.policy_value_net.save_model('./current_policy.pt')
                     if win_ratio > self.best_win_ratio:
                         print("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
-                        self.policy_value_net.save_model('./best_policy.model')
+                        self.policy_value_net.save_model('./best_policy_15_15_5.pt')
                         if (self.best_win_ratio == 1.0 and
                                 self.pure_mcts_playout_num < 5000):
                             self.pure_mcts_playout_num += 1000
