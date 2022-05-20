@@ -47,9 +47,9 @@ class Human(object):
 
 
 def run():
-    n = 4
-    width, height = 6, 6
-    model_file = 'best_policy_6_6_4.pt'
+    n = 5
+    width, height = 11, 11
+    model_file = 'best_policy_11_11_5.pt'
 
     try:
         '''
