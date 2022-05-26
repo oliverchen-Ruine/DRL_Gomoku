@@ -22,8 +22,8 @@ from policy_value_net_pytorch import PolicyValueNet  # Pytorch
 class TrainPipeline():
     def __init__(self, init_model=None):
         # params of the board and the game
-        self.board_width = 15
-        self.board_height = 15
+        self.board_width = 11
+        self.board_height = 11
         self.n_in_row = 5
         self.board = Board(width=self.board_width,
                            height=self.board_height,
@@ -48,7 +48,7 @@ class TrainPipeline():
         # the opponent to evaluate the trained policy
         self.pure_mcts_playout_num = 1000
         self.book = xlwt.Workbook(encoding='utf-8', style_compression=0)
-        self.sheet = self.book.add_sheet("15×15,五子棋", cell_overwrite_ok=True)
+        self.sheet = self.book.add_sheet("11×11,五子棋", cell_overwrite_ok=True)
         self.col = 1  # num of excel's cul
         col = ("kl", "lr_multiplier", "loss", "entropy", "explained_var_old", "explained_var_new", "num_playouts", "win", "lose", "tie")
         for i in range(10):
@@ -202,7 +202,7 @@ class TrainPipeline():
                         print("New best policy!!!!!!!!")
                         self.best_win_ratio = win_ratio
                         # update the best_policy
-                        self.policy_value_net.save_model('./best_policy_15_15_5.pt')
+                        self.policy_value_net.save_model('./best_policy.pt')
                         if (self.best_win_ratio == 1.0 and
                                 self.pure_mcts_playout_num < 5000):
                             self.pure_mcts_playout_num += 1000

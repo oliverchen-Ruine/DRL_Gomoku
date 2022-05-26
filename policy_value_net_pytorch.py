@@ -136,7 +136,7 @@ class PolicyValueNet():
         log_act_probs, value = self.policy_value_net(state_batch)
         # define the loss = (z - v)^2 - pi^T * log(p) + c||theta||^2
         # Note: the L2 penalty is incorporated in optimizer
-        value_loss = F.mse_loss(value.view(-1), winner_batch)
+        value_loss = F.huber_loss(value.view(-1), winner_batch)
         policy_loss = -torch.mean(torch.sum(mcts_probs*log_act_probs, 1))
         loss = value_loss + policy_loss
         # backward and optimize
